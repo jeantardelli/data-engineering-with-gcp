@@ -3,3 +3,6 @@ install:
 
 lint:
 	pylint ./scripts/*.py
+
+black:
+	python -m black ./scripts/*.py

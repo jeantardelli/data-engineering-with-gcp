@@ -5,20 +5,23 @@ steps:
     args: ["-m", "pip", "install", "-r", "./chapter03/requirements.txt" ,"--user"]
 
   - name: 'python:3.10-slim'
-    id: Lint
-    entrypoint: 'python'
-    args: ["-m", "pylint", "./chapter03/scripts/create_test_dataset.py"]
-
-
-  - name: 'python:3.10-slim'
-    id: Black formatter
-    entrypoint: 'python'
-    args: ["-m", "black", "./chapter03/scripts/create_test_dataset.py"]
-
-
-  - name: 'python:3.10-slim'
     id: Create BigQuery dataset
     entrypoint: 'python'
-    args: ["./chapter03/scripts/create_test_dataset.py", "-l", "${LOCATION}", "-n", "test_dataset"]
+    args: ["./chapter03/scripts/create_dataset.py", "-l", "${LOCATION}", "-n", "test_dataset"]
     env:
       - "LOCATION=$LOCATION"
+
+  - name: 'gcr.io/cloud-builders/wget'
+    id: Download CSV file
+    args: ['-P', './source/', '-O', 'cereals.csv', 'https://perso.telecom-paristech.fr/eagan/class/igr204/data/cereal.csv']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: Save file in GS
+    args: ['cp', 'chapter03/source/cereals.csv', 'gs://${PROJECT_ID}/cereals.csv']
+    env:
+      - "PROJECT_ID=${PROJECT_ID}"
+
+  - name: 'python:3.10-slim'
+    id: Create BigQuery table
+    entrypoint: 'python'
+    args: ["./chapter03/scripts/loading_local_csv_file_into_bigquery.py", "-d", "test_dataset", "-t", "cereals", "-f", "chapter03/source/cereals.csv"]
