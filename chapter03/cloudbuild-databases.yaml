@@ -1,0 +1,11 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: Launch Cloud SQL MySQL instance
+    entrypoint: "bash"
+    args: ["./chapter03/scripts/launch-cloud-mysql-instance.sh"]
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: Create the apps_db database
+    entrypoint: "bash"
+    args: ["./chapter03/scripts/launch-cloud-mysql-instance.sh"]
+

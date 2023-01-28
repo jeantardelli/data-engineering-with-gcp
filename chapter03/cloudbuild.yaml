@@ -25,3 +25,9 @@ steps:
     id: Create BigQuery table
     entrypoint: 'python'
     args: ["./chapter03/scripts/loading_local_csv_file_into_bigquery.py", "-d", "test_dataset", "-t", "cereals", "-f", "chapter03/source/cereals.csv"]
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: Copy a directory into GS
+    args: ['cp', '-r', 'chapter03/source/', 'gs://${PROJECT_ID}/']
+    env:
+      - "PROJECT_ID=${PROJECT_ID}"
