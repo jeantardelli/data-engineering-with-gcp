@@ -30,7 +30,7 @@ Though manually, this is an example of the E in ETL, which is to extract data fr
 
 In this step just creates a table importing the CSV from the GCS. For this, just create a new dataset and a new table that loads that from GSC. 
 
-![imagen](https://user-images.githubusercontent.com/42701946/215282664-365c6088-6281-45c0-afcb-13a6391481)
+![imagen](https://user-images.githubusercontent.com/42701946/215282664-365c6088-6281-45c0-afcb-13a639148180.png)
 
 ## Step 4 | Create a BigQuery data mart
 
