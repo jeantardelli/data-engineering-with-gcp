@@ -2,7 +2,7 @@
 
 import argparse
 from google.cloud import bigquery
-from google.cloud.exceptions import NotFound
+from google.cloud.exceptions import NotFound, Conflict
 
 
 # Construct a BigQuery client object.
@@ -25,7 +25,7 @@ def create_bigquery_dataset(dataset_name, dataset_location):
         # Verify dataset existence
         client.get_dataset(dataset_id)
         print(f"Dataset <{dataset_id}> already exists!")
-    except NotFound:
+    except (NotFound, Conflict):
         # Construct a full Dataset object to send to the API.
         dataset = bigquery.Dataset(dataset_id)
         # Specify the geographic location where the dataset should reside.
