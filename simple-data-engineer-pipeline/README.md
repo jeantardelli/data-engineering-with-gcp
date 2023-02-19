@@ -1,7 +1,5 @@
 # Exercises
 
-## Chapter 1
-
 You are a data engineer at a book publishing company and your product manager has asked you to build a dashboard to show the total revenue and customer satisfaction index in a single dashboard.
 
 Your company doesn't have any data infrastructure yet, but you know that your company has these three applications that contain TBs of data:
@@ -37,4 +35,3 @@ It will certainly be an ETL or ELT, depending on the necessities of the business
 The data pipeline can be something like this:
 
 ![imagen](https://user-images.githubusercontent.com/42701946/212650151-2f2caf5d-fe84-47f4-ab03-e9cf4f1683b9.png)
-

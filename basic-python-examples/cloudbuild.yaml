@@ -2,11 +2,11 @@ steps:
   - name: 'python:3.10-slim'
     id: Install dependencies
     entrypoint: 'python'
-    args: ["-m", "pip", "install", "-r", "./chapter03/requirements.txt" ,"--user"]
+    args: ["-m", "pip", "install", "-r", "./basic-python-examples/requirements.txt" ,"--user"]
 
   - name: 'python:3.10-slim'
     id: Create BigQuery datasets
     entrypoint: 'bash'
-    args: ["./chapter03/scripts/create-multiple-datasets.sh",]
+    args: ["./basic-python-examples/scripts/create-multiple-datasets.sh",]
     env:
       - "LOCATION=$LOCATION"
