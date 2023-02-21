@@ -11,3 +11,5 @@ export PYTHON_VERSION=3
 export GCS_BUCKET=composer-dev
 export INSTANCE_NAME=instance-dev
 export GCP_PROJECT_ID=cicd-data-engineer-pipelines
+
+export MYSQL_INSTANCE_NAME=instance-dev

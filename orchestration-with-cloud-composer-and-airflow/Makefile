@@ -28,3 +28,6 @@ delete-dag:
 		--environment ${ENVIRONMENT_NAME} \
 		--location ${LOCATION} \
 		--source ${FILENAME}
+
+cloud-composer-env-variables:
+	gcloud beta composer environment create --env-variables=["MYSQL_INSTANCE_NAME"="${MYSQL_INSTANCE_NAME}"]

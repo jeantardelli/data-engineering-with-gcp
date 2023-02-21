@@ -1,4 +1,4 @@
-# Exercises
+# Q&A
 
 You are a data engineer at a book publishing company and your product manager has asked you to build a dashboard to show the total revenue and customer satisfaction index in a single dashboard.
 
