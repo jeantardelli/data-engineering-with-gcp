@@ -7,7 +7,7 @@ from airflow.utils.dates import days_ago
 
 
 # Declares the DAG owner
-args = {"owner": "jtardelli"}
+args = {"owner": "jtardelli", "start_date": days_ago(1)}
 
 # DAG declaration. It contains the time to start the DAG, the
 # interval and the DAG id.
@@ -15,7 +15,6 @@ with DAG(
     dag_id="hello_worrd",
     default_args=args,
     schedule_interval="0 5 * * *",  # minute, hour, day, month, and week day
-    start_date=days_ago(1),
 ) as dag:
 
     # Define BashOperator to print words
