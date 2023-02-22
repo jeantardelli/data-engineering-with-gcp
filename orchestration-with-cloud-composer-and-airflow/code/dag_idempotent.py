@@ -50,11 +50,14 @@ BQ_DWH_DATASET = settings["bd_dwh_dataset"]
 
 # Airflow macro
 # Airflow macro variables are variables that return information about the DAG
-EXECUTION_DATE = "{{ ds }}"
+EXTRACTED_DATE = "{{ ds }}"
+EXTRACTED_DATE_NODASH = "{{ ds_nodash }}"
 
 # Regions
 GCS_REGIONS_SOURCE_OBJECT = f"{GCS_SOURCE_DATA_BUCKET}/source/regions/regions.csv"
-GCS_REGIONS_TARGET_OBJECT = f"{GCS_SOURCE_DATA_BUCKET}/regions/regions.csv"
+GCS_REGIONS_TARGET_OBJECT = (
+    f"{GCS_SOURCE_DATA_BUCKET}/regions/{EXTRACTED_DATE_NODASH}/regions.csv"
+)
 BQ_REGIONS_TABLE_NAME = "regions"
 BQ_REGIONS_TABLE_ID = f"{GCP_PROJECT_ID}.{BQ_RAW_DATASET}.{BQ_REGIONS_TABLE_NAME}"
 BQ_RETIONS_TABLE_SCHEMA = read_json_schema(
@@ -81,15 +84,13 @@ BQ_STATIONS_TABLE_SCHEMA = read_json_schema(
 # Trips
 BQ_TEMP_EXTRACT_DATASET_NAME = "temp_staging"
 BQ_TEMP_EXTRACT_TABLE_NAME = "trips"
-BQ_TEMP_TABLE_ID = (
-    f"{GCP_PROJECT_ID}.{BQ_TEMP_EXTRACT_DATASET_NAME}.{BQ_TEMP_EXTRACT_TABLE_NAME}"
-)
+BQ_TEMP_TABLE_ID = f"{GCP_PROJECT_ID}.{BQ_TEMP_EXTRACT_DATASET_NAME}.{BQ_TEMP_EXTRACT_TABLE_NAME}_{EXTRACTED_DATE_NODASH}"
 BQ_TEMP_TRIPS_SQL = f"""
     SELECT *
       FROM `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips`
-     WHERE DATE(start_date) = DATE('{EXECUTION_DATE}')
+     WHERE DATE(start_date) = DATE('{EXTRACTED_DATE}')
     """
-GCS_TRIPS_SOURCE_OBJECT = "trips/trips.csv"
+GCS_TRIPS_SOURCE_OBJECT = "trips/{EXTRACTED_DATE_NODASH}/*.csv"
 GCS_TRIPS_SOURCE_URI = f"gs://{GCS_SOURCE_DATA_BUCKET}/{GCS_TRIPS_SOURCE_OBJECT}"
 BQ_TRIPS_TABLE_NAME = "trips"
 BQ_TRIPS_TABLE_ID = f"{GCP_PROJECT_ID}.{BQ_RAW_DATASET}.{BQ_TRIPS_TABLE_NAME}"
@@ -99,9 +100,7 @@ BQ_TRIPS_TABLE_SCHEMA = read_json_schema(
 
 # DWH
 BQ_FACT_TRIPS_DAILY_TABLE_NAME = "fact_trips_daily"
-BQ_FACT_TRIPS_DAILY_TABLE_ID = (
-    f"{GCP_PROJECT_ID}.{BQ_RAW_DATASET}.{BQ_FACT_TRIPS_DAILY_TABLE_NAME}"
-)
+BQ_FACT_TRIPS_DAILY_TABLE_ID = f"{GCP_PROJECT_ID}.{BQ_RAW_DATASET}.{BQ_FACT_TRIPS_DAILY_TABLE_NAME}${EXTRACTED_DATE_NODASH}"
 BQ_FACT_TRIPS_DAILY_SQL = f"""
     SELECT DATE(start_date) as trip_date,
            start_station_id,
@@ -109,7 +108,7 @@ BQ_FACT_TRIPS_DAILY_SQL = f"""
            SUM(duration_sec) as sum_duration_sec,
            AVG(duration_sec) as avg_duration_sec
       FROM `{BQ_TRIPS_TABLE_ID}`
-     WHERE DATE(start_date) = DATE('{EXECUTION_DATE}')
+     WHERE DATE(start_date) = DATE('{EXTRACTED_DATE}')
      GROUP BY trip_date, start_station_id
     """
 BQ_DIM_STATIONS_TABLE_NAME = "dim_stations"
@@ -203,9 +202,11 @@ with DAG(
         task_id="gcs_to_bigquery_trips",
         bucket=GCS_SOURCE_DATA_BUCKET,
         source_objects=[GCS_TRIPS_SOURCE_OBJECT],
-        destination_project_dataset_table=BQ_TRIPS_TABLE_ID,
+        destination_project_dataset_table=BQ_TRIPS_TABLE_ID
+        + f"${EXTRACTED_DATE_NODASH}",
         schema_fields=BQ_TRIPS_TABLE_SCHEMA,
-        write_disposition="WRITE_APPEND",
+        time_partitioning={"time_partitioning_type": "DAY", "field": "start_date"},
+        write_disposition="WRITE_TRUNCATE",
     )
 
     # DWH
@@ -214,7 +215,7 @@ with DAG(
         task_id="dwh_fact_trips_daily",
         sql=BQ_FACT_TRIPS_DAILY_SQL,
         destination_dataset_table=BQ_FACT_TRIPS_DAILY_TABLE_ID,
-        write_disposition="WRITE_APPEND",
+        write_disposition="WRITE_TRUNCATE",
         create_disposition="CREATE_IF_NEEDED",
         use_legacy_sql=False,
         priority="BATCH",
@@ -234,7 +235,9 @@ with DAG(
     # Performs checks against BigQuery
     bigquery_row_count_checker_dwh_fact_trips_daily = BigQueryCheckOperator(
         task_id="bigquery_row_count_check_dwh_fact_trips_daily",
-        sql=f"SELECT COUNT(*) FROM `{BQ_FACT_TRIPS_DAILY_TABLE_ID}`",
+        sql=f"""SELECT COUNT(*)
+                FROM `{BQ_FACT_TRIPS_DAILY_TABLE_ID}`
+               WHERE trip_date = DATE('{EXTRACTED_DATE}')""",
         use_legacy=False,
     )
 

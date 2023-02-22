@@ -82,6 +82,3 @@ with DAG(
     )
 
     sql_export_task >> gcs_to_bigquery >> bigquery_to_bigquery
-
-if __name__ == "__main__":
-    dag.cli()

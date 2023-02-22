@@ -8,3 +8,4 @@ apache-airflow-backport-providers-mysql==2021.3.3
 psycopg2-binary==2.9.5
 google-cloud-storage==2.7.0
 pandas-gbq==0.14.1
+pylint
