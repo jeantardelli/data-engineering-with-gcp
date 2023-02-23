@@ -65,13 +65,12 @@ BQ_RETIONS_TABLE_SCHEMA = read_json_schema(
 )
 
 # Stations
-SQL_QUERY = "SELECT * FROM apps_db.stations"
 GCS_STATION_SOURCE_OBJECT = "stations/stations.csv"
 export_body = {
     "exportContext": {
         "fileType": "csv",
         "uri": f"gs://{GCS_SOURCE_DATA_BUCKET}/{GCS_STATION_SOURCE_OBJECT}",
-        "csvExportoptions": {"selectQuery": SQL_QUERY},
+        "csvExportoptions": {"selectQuery": "SELECT * FROM apps_db.stations"},
     }
 }
 
@@ -85,11 +84,6 @@ BQ_STATIONS_TABLE_SCHEMA = read_json_schema(
 BQ_TEMP_EXTRACT_DATASET_NAME = "temp_staging"
 BQ_TEMP_EXTRACT_TABLE_NAME = "trips"
 BQ_TEMP_TABLE_ID = f"{GCP_PROJECT_ID}.{BQ_TEMP_EXTRACT_DATASET_NAME}.{BQ_TEMP_EXTRACT_TABLE_NAME}_{EXTRACTED_DATE_NODASH}"
-BQ_TEMP_TRIPS_SQL = f"""
-    SELECT *
-      FROM `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips`
-     WHERE DATE(start_date) = DATE('{EXTRACTED_DATE}')
-    """
 GCS_TRIPS_SOURCE_OBJECT = "trips/{EXTRACTED_DATE_NODASH}/*.csv"
 GCS_TRIPS_SOURCE_URI = f"gs://{GCS_SOURCE_DATA_BUCKET}/{GCS_TRIPS_SOURCE_OBJECT}"
 BQ_TRIPS_TABLE_NAME = "trips"
@@ -101,29 +95,10 @@ BQ_TRIPS_TABLE_SCHEMA = read_json_schema(
 # DWH
 BQ_FACT_TRIPS_DAILY_TABLE_NAME = "fact_trips_daily"
 BQ_FACT_TRIPS_DAILY_TABLE_ID = f"{GCP_PROJECT_ID}.{BQ_DWH_DATASET}.{BQ_FACT_TRIPS_DAILY_TABLE_NAME}${EXTRACTED_DATE_NODASH}"
-BQ_FACT_TRIPS_DAILY_SQL = f"""
-    SELECT DATE(start_date) as trip_date,
-           start_station_id,
-           COUNT(trip_id) as total_trips,
-           SUM(duration_sec) as sum_duration_sec,
-           AVG(duration_sec) as avg_duration_sec
-      FROM `{BQ_TRIPS_TABLE_ID}`
-     WHERE DATE(start_date) = DATE('{EXTRACTED_DATE}')
-     GROUP BY trip_date, start_station_id
-    """
 BQ_DIM_STATIONS_TABLE_NAME = "dim_stations"
 BQ_DIM_STATIONS_TABLE_ID = (
     f"{GCP_PROJECT_ID}.{BQ_DWH_DATASET}.{BQ_FACT_TRIPS_DAILY_TABLE_NAME}"
 )
-BQ_DIM_STATIONS_SQL = f"""
-    SELECT station_id,
-           stations.name as station_name,
-           regions.name as region_name,
-           capacity
-      FROM `{BQ_STATIONS_TABLE_ID}` stations
-      JOIN `{BQ_REGIONS_TABLE_ID}` regions
-            ON stations.region_id = CAST(regions.region_id AS STRING)
-    """
 
 # Declare DAG
 with DAG(
@@ -180,7 +155,11 @@ with DAG(
     # Executes BigQuery SQL queries in a specific BigQuery database
     bigquery_to_bigquery_temp_trips = BigQueryOperator(
         task_id="bigquery_to_bigquery_temp_trips",
-        sql=BQ_TEMP_TRIPS_SQL,
+        sql=f"""
+            SELECT *
+              FROM `bigquery-public-data.san_francisco_bikeshare.bikeshare_trips`
+             WHERE DATE(start_date) = DATE('{EXTRACTED_DATE}')
+            """,
         use_legacy=False,
         destination_dataset_table=BQ_TEMP_TABLE_ID,
         write_disposition="WRITE_TRUNCATE",
@@ -213,7 +192,16 @@ with DAG(
     # Executes BigQuery SQL queries in a specific BigQuery database
     dwh_fact_trips_daily = BigQueryOperator(
         task_id="dwh_fact_trips_daily",
-        sql=BQ_FACT_TRIPS_DAILY_SQL,
+        sql=f"""
+            SELECT DATE(start_date) AS trip_date,
+                   start_station_id,
+                   COUNT(trip_id) AS total_trips,
+                   SUM(duration_sec) AS sum_duration_sec,
+                   AVG(duration_sec) AS avg_duration_sec
+              FROM `{BQ_TRIPS_TABLE_ID}`
+             WHERE DATE(start_date) = DATE('{EXTRACTED_DATE}')
+             GROUP BY trip_date, start_station_id
+            """,
         destination_dataset_table=BQ_FACT_TRIPS_DAILY_TABLE_ID,
         write_disposition="WRITE_TRUNCATE",
         create_disposition="CREATE_IF_NEEDED",
@@ -224,7 +212,15 @@ with DAG(
     # Executes BigQuery SQL queries in a specific BigQuery database
     dwh_dim_stations = BigQueryOperator(
         task_id="dwh_dim_stations",
-        sql=BQ_DIM_STATIONS_SQL,
+        sql=f"""
+            SELECT station_id,
+                   stations.name AS station_name,
+                   regions.name AS region_name,
+                   capacity
+              FROM `{BQ_STATIONS_TABLE_ID}` stations
+              JOIN `{BQ_REGIONS_TABLE_ID}` regions
+                   ON stations.region_id = CAST(regions.region_id AS STRING)
+            """,
         destination_dataset_table=BQ_DIM_STATIONS_TABLE_ID,
         write_disposition="WRITE_TRUNCATE",
         create_disposition="CREATE_IF_NEEDED",
@@ -233,18 +229,28 @@ with DAG(
     )
 
     # Performs checks against BigQuery
-    bigquery_row_count_checker_dwh_fact_trips_daily = BigQueryCheckOperator(
+    bigquery_row_count_check_dwh_fact_trips_daily = BigQueryCheckOperator(
         task_id="bigquery_row_count_check_dwh_fact_trips_daily",
-        sql=f"""SELECT COUNT(*)
-                FROM `{BQ_FACT_TRIPS_DAILY_TABLE_ID}`
-               WHERE trip_date = DATE('{EXTRACTED_DATE}')""",
+        sql=f"""
+            SELECT COUNT(*)
+              FROM `{BQ_FACT_TRIPS_DAILY_TABLE_ID}`
+             WHERE trip_date = DATE('{EXTRACTED_DATE}')
+            """,
         use_legacy=False,
     )
 
-    bigquery_row_count_checker_dwh_dim_stations = BigQueryCheckOperator(
+    bigquery_row_count_check_dwh_dim_stations = BigQueryCheckOperator(
         task_id="bigquery_row_count_check_dwh_dim_stations",
         sql=f"SELECT COUNT(*) FROM `{BQ_DIM_STATIONS_TABLE_ID}`",
         use_legacy=False,
+    )
+
+    send_dag_success_signal = GoogleCloudStorageToGoogleCloudStorageOperator(
+        task_id="send_dag_success_signal",
+        source_bucket=GCS_SOURCE_DATA_BUCKET,
+        source_object="data/signal/_SUCCESS",
+        destination_bucket=GCS_SOURCE_DATA_BUCKET,
+        destination_object=f"data/signal/staging/sensor/{EXTRACTED_DATE_NODASH}/_SUCCESS",
     )
 
     # Define DAG dependencies
@@ -259,10 +265,17 @@ with DAG(
     (
         [gcs_to_bigquery_station, gcs_to_bigquery_region, gcs_to_bigquery_trips]
         >> dwh_fact_trips_daily
-        >> bigquery_row_count_checker_dwh_fact_trips_daily
+        >> bigquery_row_count_check_dwh_fact_trips_daily
     )
     (
         [gcs_to_bigquery_station, gcs_to_bigquery_region, gcs_to_bigquery_trips]
         >> dwh_dim_stations
-        >> bigquery_row_count_checker_dwh_dim_stations
+        >> bigquery_row_count_check_dwh_dim_stations
+    )
+    (
+        [
+            bigquery_row_count_check_dwh_fact_trips_daily,
+            bigquery_row_count_check_dwh_dim_stations
+        ]
+        >> send_dag_success_signal
     )
