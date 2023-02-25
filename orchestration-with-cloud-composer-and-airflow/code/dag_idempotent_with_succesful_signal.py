@@ -275,7 +275,7 @@ with DAG(
     (
         [
             bigquery_row_count_check_dwh_fact_trips_daily,
-            bigquery_row_count_check_dwh_dim_stations
+            bigquery_row_count_check_dwh_dim_stations,
         ]
         >> send_dag_success_signal
     )

@@ -3,8 +3,8 @@ This directory contains code that builds orchestration batch data loading using 
 To run the code it is necessary to create a Cloud Composer environment. To create a Cloud Composer environment please run the following:
 
 ```bash
-bash ./scripts/set-environment-variables.sh
-make create-environment
+bash ./scripts/set_environment_variables.sh
+make all
 ```
 
 Some examples read data from Cloud SQL. For this to run it is necessary to do the following:
