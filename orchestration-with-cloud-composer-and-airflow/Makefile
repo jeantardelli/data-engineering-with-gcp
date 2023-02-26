@@ -2,6 +2,8 @@ gcs-create-bucket:
 	gcloud storage buckets create gs://${GCS_BUCKET_NAME} \
 		--location=${GCS_LOCATION} \
 		--project=${GCS_PROJECT}
+gcs-upload-file:
+	gsutil cp -r ${GCS_DATA_SOURCE_PATH} gs://${GCS_BUCKET_NAME}/
 
 cloud-sql-instance:
 	gcloud sql instances create ${CLOUD_SQL_INSTANCE_NAME} \
@@ -15,10 +17,17 @@ cloud-sql-instance:
 
 cloud-sql-create-database:
 	gcloud sql databases create ${CLOUD_SQL_DATABASE_NAME} \
-		--instance=${CLOUD_SQL_INSTANCE_NAME} \
-
+		--instance=${CLOUD_SQL_INSTANCE_NAME} 
 cloud-sql-create-table:
 	python ./scripts/cloud_sql_create_table.py
+
+cloud-sql-grant-gcs-permissions:
+	gsutil iam ch serviceAccount:${CLOUD_SQL_SERVICE_ACCOUNT}:objectAdmin gs://${GCS_BUCKET_NAME}
+
+cloud-sql-import-data:
+	yes | gcloud sql import csv ${CLOUD_SQL_INSTANCE_NAME} gs://${GCS_BUCKET_NAME}/${CLOUD_SQL_IMPORT_FILE_PATH}/${CLOUD_SQL_IMPORT_FILE_NAME} \
+		--database=${CLOUD_SQL_DATABASE_NAME} \
+		--table=${CLOUD_SQL_TABLE_NAME}
 
 cloud-composer-api:
 	gcloud services enable composer.googleapis.com
@@ -56,6 +65,8 @@ python-lint:
 python-black:
 	python -m black ./code/*
 
-cloud-sql-set-up: cloud-sql-instance cloud-sql-create-database cloud-sql-create-table
+cloud-sql-set-up: cloud-sql-instance cloud-sql-create-database cloud-sql-create-table cloud-sql-grant-gcs-permissions cloud-sql-import-data
 
+gcs-set-up: gcs-create-bucket gcs-upload-file
 
+all: gcs-set-up cloud-sql-set-up
