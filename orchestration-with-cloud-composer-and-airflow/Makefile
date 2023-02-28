@@ -2,6 +2,10 @@ gcs-create-bucket:
 	gcloud storage buckets create gs://${GCS_BUCKET_NAME} \
 		--location=${GCS_LOCATION} \
 		--project=${GCS_PROJECT}
+
+gcs-remove-bucket:
+	gcloud storage rm --recursive gs://${GCS_BUCKET_NAME}
+
 gcs-upload-file:
 	gsutil cp -r ${GCS_DATA_SOURCE_PATH} gs://${GCS_BUCKET_NAME}/
 
@@ -15,6 +19,9 @@ cloud-sql-instance:
 		--storage-size=${CLOUD_SQL_STORAGE_SIZE} \
 		--storage-type=${CLOUD_SQL_STORAGE_TYPE}
 
+cloud-sql-remove-instance:
+	yes | gcloud sql instances delete ${CLOUD_SQL_INSTANCE_NAME}
+
 cloud-sql-create-database:
 	gcloud sql databases create ${CLOUD_SQL_DATABASE_NAME} \
 		--instance=${CLOUD_SQL_INSTANCE_NAME} 
@@ -22,7 +29,7 @@ cloud-sql-create-table:
 	python ./scripts/cloud_sql_create_table.py
 
 cloud-sql-grant-gcs-permissions:
-	gsutil iam ch serviceAccount:${CLOUD_SQL_SERVICE_ACCOUNT}:objectAdmin gs://${GCS_BUCKET_NAME}
+	bash ./scripts/set_cloud_sql_gcs_permissions.sh
 
 cloud-sql-import-data:
 	yes | gcloud sql import csv ${CLOUD_SQL_INSTANCE_NAME} gs://${GCS_BUCKET_NAME}/${CLOUD_SQL_IMPORT_FILE_PATH}/${CLOUD_SQL_IMPORT_FILE_NAME} \
@@ -34,12 +41,16 @@ cloud-composer-api:
 
 cloud-composer-environment:
 	gcloud composer environments create ${CLOUD_COMPOSER_ENVIRONMENT_NAME} \
-		--location ${CLOUD_COMPOSER_LOCATION} \
-		--image-version ${CLOUD_COMPOSER_IMAGE_VERSION} \
-		--node-count ${CLOUD_COMPOSER_NODE_COUNT} \
-		--machine-type ${CLOUD_COMPOSER_MACHINE_TYPE} \
-		--disk-size ${CLOUD_COMPOSER_DISK_SIZE} \
-		--python-version ${CLOUD_COMPOSER_PYTHON_VERSION}
+		--location=${CLOUD_COMPOSER_LOCATION} \
+		--image-version=${CLOUD_COMPOSER_IMAGE_VERSION} \
+		--node-count=${CLOUD_COMPOSER_NODE_COUNT} \
+		--machine-type=${CLOUD_COMPOSER_MACHINE_TYPE} \
+		--disk-size=${CLOUD_COMPOSER_DISK_SIZE} \
+		--python-version=${CLOUD_COMPOSER_PYTHON_VERSION} \
+		--zone=${CLOUD_COMPOSER_LOCATION}-a
+
+cloud-composer-delete-env:
+	yes | gcloud composer environments delete ${CLOUD_COMPOSER_ENVIRONMENT_NAME} --location=${CLOUD_COMPOSER_LOCATION}
 
 cloud-composer-env-variables:
 	gcloud beta composer environment create --env-variables=["CLOUD_SQL_INSTANCE_NAME"="${CLOUD_SQL_INSTANCE_NAME}"]
@@ -69,4 +80,8 @@ cloud-sql-set-up: cloud-sql-instance cloud-sql-create-database cloud-sql-create-
 
 gcs-set-up: gcs-create-bucket gcs-upload-file
 
-all: gcs-set-up cloud-sql-set-up
+cloud-composer-set-up: cloud-composer-environment
+
+all: gcs-set-up cloud-sql-set-up cloud-composer-environment
+
+tear-down: cloud-composer-delete-env cloud-sql-remove-instance gcs-remove-bucket

@@ -3,7 +3,7 @@
 # Cloud Composer set up variables 
 export CLOUD_COMPOSER_IMAGE_VERSION=composer-1.16.6-airflow-1.10.15
 export CLOUD_COMPOSER_NODE_COUNT=3
-export CLOUD_COMPOSER_DISK_SIZE=20
+export CLOUD_COMPOSER_DISK_SIZE=30
 export CLOUD_COMPOSER_LOCATION=us-central1
 export CLOUD_COMPOSER_ENVIRONMENT_NAME=composer-dev
 export CLOUD_COMPOSER_MACHINE_TYPE=n1-standard-1
