@@ -52,14 +52,16 @@ cloud-composer-environment:
 cloud-composer-delete-env:
 	yes | gcloud composer environments delete ${CLOUD_COMPOSER_ENVIRONMENT_NAME} --location=${CLOUD_COMPOSER_LOCATION}
 
-cloud-composer-env-variables:
-	gcloud beta composer environment create --env-variables=["CLOUD_SQL_INSTANCE_NAME"="${CLOUD_SQL_INSTANCE_NAME}"]
+cloud-composer-export-env-variables:
+	gcloud beta composer environments update ${CLOUD_COMPOSER_ENVIRONMENT_NAME} \
+		--location=${CLOUD_COMPOSER_LOCATION} \
+		--update-env-variables=CLOUD_SQL_INSTANCE_NAME=${CLOUD_SQL_INSTANCE_NAME},GCP_PROJECT_ID=${GCP_PROJECT_ID},GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
 
 cloud-composer-deploy-dag:
 	gcloud composer environments storage dags import \
 		--environment ${CLOUD_COMPOSER_ENVIRONMENT_NAME} \
 		--location ${CLOUD_COMPOSER_LOCATION} \
-		--source ${CLOUD_COMPOSER_FILENAME}
+		--source ${CLOUD_COMPOSER_DAG_FILENAME}
 
 cloud-composer-delete-dag:
 	gcloud composer environments storage dags delete \

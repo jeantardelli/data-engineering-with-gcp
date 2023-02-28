@@ -13,16 +13,16 @@ from airflow.contrib.operators.bigquery_operator import BigQueryOperator
 args = {"owner": "jtardelli"}
 
 # GCS bucket
-GCS_BUCKET = os.getenv("GCS_BUCKET")
+GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 
 # Define the Cloud SQL operator GCP Project parameter
-GCP_PROJECT_ID = os.getenv("PROJECT_ID")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 
 # Define the Cloud SQL operator instance name parameter
-INSTANCE_NAME = os.getenv("INSTANCE_NAME")
+CLOUD_SQL_INSTANCE_NAME = os.getenv("CLOUD_SQL_INSTANCE_NAME")
 
 # URI to export data to. Used by the Cloud SQL operator body parameter
-EXPORT_URI = f"gs://{GCS_BUCKET}/mysql_export/from_composer/stations/stations.csv"
+EXPORT_URI = f"gs://{GCS_BUCKET_NAME}/mysql_export/from_composer/stations/stations.csv"
 
 # SQL query to extract data from the database. Used by the Cloud SQL operator
 # body parameter
@@ -50,7 +50,7 @@ with DAG(
     sql_export_task = CloudSqlInstanceExportOperator(
         project_id=GCP_PROJECT_ID,
         body=export_body,
-        instance=INSTANCE_NAME,
+        instance=CLOUD_SQL_INSTANCE_NAME,
         task_id="sql_export_task",
     )
 
@@ -58,7 +58,7 @@ with DAG(
     # parameters similar to the BigQuery Python API
     gcs_to_bigquery = GoogleCloudStorageToBigQueryOperator(
         task_id="gcs_to_bigquery_example",
-        bucket=GCS_BUCKET,
+        bucket=GCS_BUCKET_NAME,
         source_objects=["mysql_export/from_composer/stations/stations.csv"],
         destination_project_dataset_table="raw_bikesharing.stations",
         schema_fields=[
@@ -68,13 +68,14 @@ with DAG(
             {"name": "capacity", "type": "INTEGER", "mode": "NULLABLE"},
         ],
         write_disposition="WRITE_TRUNCATE",
+        create_disposition="CREATE_IF_NEEDED",
     )
 
     # BigQuery Operator. It performs a very simple aggregation
     bigquery_to_bigquery = BigQueryOperator(
         task_id="bigquery_to_bigquery",
         sql="SELECT COUNT(*) AS count FROM `raw_bikesharing.stations`",
-        destination_dataset_table="dwh_bikesharing.temporary_stations_count",
+        destination_dataset_table="dm_operations.temporary_stations_count",
         write_disposition="WRITE_TRUNCATE",
         create_disposition="CREATE_IF_NEEDED",
         use_legacy_sql=False,
