@@ -22,7 +22,6 @@ export CLOUD_SQL_STORAGE_TYPE=HDD
 export CLOUD_SQL_DATABASE_NAME=apps_db
 export CLOUD_SQL_TABLE_NAME=stations
 
-export CLOUD_SQL_SERVICE_ACCOUNT=$(gcloud sql instances describe ${CLOUD_SQL_INSTANCE_NAME} --project=${GCP_PROJECT_ID} --format="value(serviceAccountEmailAddress)")
 export CLOUD_SQL_IMPORT_FILE_PATH=source/stations
 export CLOUD_SQL_IMPORT_FILE_NAME=stations.csv
 

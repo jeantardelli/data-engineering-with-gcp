@@ -57,6 +57,9 @@ cloud-composer-export-env-variables:
 		--location=${CLOUD_COMPOSER_LOCATION} \
 		--update-env-variables=CLOUD_SQL_INSTANCE_NAME=${CLOUD_SQL_INSTANCE_NAME},GCP_PROJECT_ID=${GCP_PROJECT_ID},GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
 
+cloud-composer-export-table-schemas:
+	gcloud composer environments storage data import --environment ${CLOUD_COMPOSER_ENVIRONMENT_NAME} --source=./schemas/ --location ${CLOUD_COMPOSER_LOCATION}
+
 cloud-composer-deploy-dag:
 	gcloud composer environments storage dags import \
 		--environment ${CLOUD_COMPOSER_ENVIRONMENT_NAME} \
@@ -73,17 +76,17 @@ python-install:
 	pip install --upgrade pip && pip install -r ./requirements.txt
 
 python-lint:
-	python -m pylint ./code/*
+	python -m pylint ./dags/*
 
 python-black:
-	python -m black ./code/*
+	python -m black ./dags/*
 
 cloud-sql-set-up: cloud-sql-instance cloud-sql-create-database cloud-sql-create-table cloud-sql-grant-gcs-permissions cloud-sql-import-data
 
 gcs-set-up: gcs-create-bucket gcs-upload-file
 
-cloud-composer-set-up: cloud-composer-environment
+cloud-composer-set-up: cloud-composer-environment cloud-composer-export-env-variables cloud-composer-export-table-schemas
 
-all: gcs-set-up cloud-sql-set-up cloud-composer-environment
+all: gcs-set-up cloud-sql-set-up cloud-composer-set-up
 
 tear-down: cloud-composer-delete-env cloud-sql-remove-instance gcs-remove-bucket
