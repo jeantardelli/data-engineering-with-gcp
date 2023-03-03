@@ -70,7 +70,7 @@ cloud-composer-delete-dag:
 	gcloud composer environments storage dags delete \
 		--environment ${CLOUD_COMPOSER_ENVIRONMENT_NAME} \
 		--location ${CLOUD_COMPOSER_LOCATION} \
-		--source ${CLOUD_COMPOSER_FILENAME}
+		--source ${CLOUD_COMPOSER_DAG_FILENAME}
 
 python-install:
 	pip install --upgrade pip && pip install -r ./requirements.txt
