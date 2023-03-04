@@ -109,7 +109,7 @@ with DAG(
     default_args=args,
     schedule_interval="0 5 * * *",
     start_date=datetime(2018, 1, 1),
-    end_date=datetime(2018, 1, 2),
+    end_date=datetime(2018, 1, 3),
 ) as dag:
 
     # Regions
