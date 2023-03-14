@@ -7,7 +7,7 @@ gcs-remove-bucket:
 		gcloud storage rm --recursive gs://${GCS_BUCKET_NAME}
 
 gcs-upload-file:
-		gsutil cp -r ${GCS_DATA_SOURCE_PATH} gs://${GCS_BUCKET_NAME}/
+		gsutil -m cp -r ${GCS_DATA_SOURCE_PATH} gs://${GCS_BUCKET_NAME}/
 
 dataproc-create-cluster:
 	gcloud dataproc clusters create ${DATAPROC_CLUSTER_NAME} \
@@ -33,6 +33,15 @@ dataproc-master-ssh-connection:
 
 dataproc-load-data-from-gcs-to-hdfs:
 	bash ./scripts/load_data_from_gcs_to_hdfs.sh
+
+dataproc-submit-pyspark-job:
+	bash ./scripts/submit_pyspark_job.sh
+
+python-black:
+	python -m black ./source/pyspark/*
+
+python-lint:
+	python -m pylint ./source/pyspark/*
 
 gcs-setup: gcs-create-bucket gcs-upload-file
 

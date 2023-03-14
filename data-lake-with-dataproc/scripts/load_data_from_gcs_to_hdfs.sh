@@ -26,4 +26,9 @@ gcloud compute ssh ${DATAPROC_CLUSTER_NAME}-m \
         hdfs dfs -put ${FILENAME} ../../data/${FILEPATH}
         hdfs dfs -ls ../../data/${FILEPATH}
     fi
+    echo "Export environment variables"
+    export DATAPROC_CLUSTER_NAME=${DATAPROC_CLUSTER_NAME}
+    export FILEPATH=${FILEPATH}
+    echo ${DATAPROC_CLUSTER_NAME}-m
+    echo ${FILEPATH}
 EOF
