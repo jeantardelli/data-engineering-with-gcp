@@ -9,10 +9,9 @@ sc.setLogLevel("WARN")
 
 DATAPROC_CLUSTER_NAME = os.environ.get("DATAPROC_CLUSTER_NAME")
 FILEPATH = os.environ.get("FILEPATH")
-print(FILEPATH)
 
 log_files_rdd = sc.textFile(
-    "hdfs://{}/data/{}/*".format(DATAPROC_CLUSTER_NAME, FILEPATH)
+    "hdfs://{}/data/{}*".format(DATAPROC_CLUSTER_NAME, FILEPATH)
 )
 
 # Split the logs with the " " delimiter space; this code line will split each
@@ -36,3 +35,8 @@ sql = """
 article_count_df = spark.sql(sql)
 print(" ### Get only articles and blogs records ### ")
 article_count_df.show(5)
+
+article_count_df.write.save(
+        "hdfs://{}/data/from-pyspark/article_count_df".format(DATAPROC_CLUSTER_NAME),
+        format='csv',
+        mode='overwrite')

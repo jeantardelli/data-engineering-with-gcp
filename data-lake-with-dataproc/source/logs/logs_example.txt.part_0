@@ -410,4 +410,3 @@
 144.76.194.187 - - [17/May/2015:13:05:03 +0000] "GET /projects/newpsm HTTP/1.0" 301 330 "-" "-"
 144.76.194.187 - - [17/May/2015:13:05:58 +0000] "GET /projects/nis2ldap HTTP/1.0" 301 332 "-" "-"
 75.97.9.59 - - [17/May/2015:13:05:26 +0000] "GET /favicon.ico HTTP/1.1" 200 3638 "-" "Mozilla/5.0 (iPhone; CPU iPhone OS 7_0_4 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) CriOS/32.0.1700.21 Mobile/11B554a Safari/9537.53"
-
