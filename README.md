@@ -8,9 +8,9 @@ This repo contains code for the exercises and practical examples from the book D
 
 This repo contains the following directories:
 
-- simple-data-engineer-pipeline: data doesn't stay in one place, usually, it moves from one place to another (data life cycle). This repo contains one diagram example illustrating this.
-- basic-python-etl-examples: the power of a data warehouse is delivered when organizations combine multiple sources
+- [simple-data-engineer-pipeline](./simple-data-engineer-pipeline): data doesn't stay in one place, usually, it moves from one place to another (data life cycle). This repo contains one diagram example illustrating this.
+- [basic-python-etl-examples](./basic-python-etl-examples): the power of a data warehouse is delivered when organizations combine multiple sources
 of information into a single place. This repo contains Python sample codes that performs ETL and loads data into BigQuery.
-- orchestration-with-cloud-composer-and-airflow: Cloud Composer is an Airflow-managed service in GCP. This directory contains the DAGs that orchestrate jobs/tasks and load data to BigQuery.
-- data-lake-with-dataproc: A data lake is a concept similar to a data warehouse, but the key difference is what you
+- [orchestration-with-cloud-composer-and-airflow](./orchestration-with-cloud-composer-and-airflow): Cloud Composer is an Airflow-managed service in GCP. This directory contains the DAGs that orchestrate jobs/tasks and load data to BigQuery.
+- [data-lake-with-dataproc](./data-lake-with-dataproc): A data lake is a concept similar to a data warehouse, but the key difference is what you
 store in it. This directory contains sample codes that process data using HDFS, PySpark, Hive and GCP.
