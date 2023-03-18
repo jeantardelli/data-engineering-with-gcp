@@ -1,4 +1,4 @@
-"""Read data from HDFS and store the output back in HDFS"""
+"""Read data from GCS and store the output back in GCS"""
 import os
 from pyspark.sql import SparkSession
 
@@ -10,9 +10,11 @@ sc.setLogLevel("WARN")
 DATAPROC_CLUSTER_NAME = os.environ.get("DATAPROC_CLUSTER_NAME")
 FILEPATH = os.environ.get("FILEPATH")
 
-log_files_rdd = sc.textFile(
-    "hdfs://{}/data/{}*".format(DATAPROC_CLUSTER_NAME, FILEPATH)
-)
+GCS_BUCKET_NAME = "-".join(DATAPROC_CLUSTER_NAME.split("-")[:-1])
+GCS_BUCKET_NAME += "-" + os.environ.get("GCP_PROJECT_ID")
+
+
+log_files_rdd = sc.textFile("gs://{}/{}*".format(GCS_BUCKET_NAME, FILEPATH))
 
 # Split the logs with the " " delimiter space; this code line will split each
 # record so that we can access the records like an array
@@ -37,7 +39,7 @@ print(" ### Get only articles and blogs records ### ")
 article_count_df.show(5)
 
 article_count_df.write.save(
-    "hdfs://{}/data/from-pyspark/article_count_df".format(DATAPROC_CLUSTER_NAME),
+    "gs://{}/job-result/article_count_df".format(GCS_BUCKET_NAME),
     format="csv",
     mode="overwrite",
 )
