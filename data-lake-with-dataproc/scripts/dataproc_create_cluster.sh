@@ -13,4 +13,4 @@ gcloud dataproc clusters create ${DATAPROC_CLUSTER_NAME} \
 	--worker-boot-disk-size ${DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE} \
 	--image-version ${DATAPROC_CLUSTER_IMAGE_VERSION} \
 	--project ${GCP_PROJECT_ID} \
-	--properties spark-env:DATAPROC_CLUSTER_NAME=${DATAPROC_CLUSTER_NAME}-m,spark-env:FILEPATH=${FILEPATH}
+	--properties spark-env:DATAPROC_CLUSTER_NAME=${DATAPROC_CLUSTER_NAME}-m,spark-env:FILEPATH=${FILEPATH},spark-env:GCP_PROJECT_ID=${GCP_PROJECT_ID}

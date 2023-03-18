@@ -29,6 +29,12 @@ dataproc-submit-pyspark-job:
 		--cluster ${DATAPROC_CLUSTER_NAME} \
 		--region ${DATAPROC_CLUSTER_REGION}
 
+dataproc-submit-pyspark-job-to-bigquery:
+	gcloud dataproc jobs submit pyspark gs://${GCS_BUCKET_NAME}/${GCS_BUCKET_PYSPARK_PATH} \
+		--cluster ${DATAPROC_CLUSTER_NAME} \
+		--region ${DATAPROC_CLUSTER_REGION} \
+		--jars gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar
+
 python-black:
 	python -m black ./source/pyspark/*
 
