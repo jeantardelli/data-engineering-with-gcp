@@ -38,8 +38,6 @@ article_count_df = spark.sql(sql)
 print(" ### Get only articles and blogs records ### ")
 article_count_df.show(5)
 
-article_count_df.write.format("bigquery")\
-        .option('temporaryGcsBucket', GCS_BUCKET_NAME)\
-        .option('table', 'dm_content_creators.article_count_df')\
-        .mode('overwrite')\
-        .save()
+article_count_df.write.format("bigquery").option(
+    "temporaryGcsBucket", GCS_BUCKET_NAME
+).option("table", "dm_content_creators.article_count_df").mode("overwrite").save()
