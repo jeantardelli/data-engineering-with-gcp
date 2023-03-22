@@ -21,11 +21,11 @@ export GCS_DATA_SOURCE_PATH=./source/
 export GCS_DAGS_SOURCE_PATH=./dags
 export GCS_BUCKET_OBJECT_PATH=source/logs/*
 export GCS_BUCKET_OBJECT_NOSQL_PATH=source/nosql/create_hive_table_example.sql
-export GCS_BUCKET_PYSPARK_PATH=source/pyspark/gcs_to_bigquey.py
+export GCS_BUCKET_PYSPARK_PATH=source/pyspark/gcs_to_bigquery.py
 
 # Cloud Composer set up variables 
 export CLOUD_COMPOSER_IMAGE_VERSION=composer-1.20.10-airflow-1.10.15
-export CLOUD_COMPOSER_NODE_COUNT=2
+export CLOUD_COMPOSER_NODE_COUNT=3
 export CLOUD_COMPOSER_DISK_SIZE=30
 export CLOUD_COMPOSER_LOCATION=us-central1
 export CLOUD_COMPOSER_ENVIRONMENT_NAME=composer-dev

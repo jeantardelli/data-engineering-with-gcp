@@ -19,18 +19,27 @@ GCS_BUCKET_PYSPARK_PATH = os.environ.get("GCS_BUCKET_PYSPARK_PATH")
 # Dataproc cluster config
 DATAPROC_CLUSTER_REGION = os.environ.get("DATAPROC_CLUSTER_REGION")
 DATAPROC_CLUSTER_ZONE = os.environ.get("DATAPROC_CLUSTER_ZONE")
+DATAPROC_CLUSTER_NAME_RAW = os.environ.get("DATAPROC_CLUSTER_NAME")
 DATAPROC_CLUSTER_NAME = os.environ.get("DATAPROC_CLUSTER_NAME")
 DATAPROC_CLUSTER_NAME += "-{{ ds_nodash }}"
-DATAPROC_CLUSTER_MASTER_MACHINE_TYPE = os.environ.get("DATAPROC_CLUSTER_MASTER_MACHINE_TYPE")
-DATAPROC_CLUSTER_MASTER_BOOT_DISK_SIZE = os.environ.get("DATAPROC_CLUSTER_MASTER_BOOT_DISK_SIZE")
+DATAPROC_CLUSTER_MASTER_MACHINE_TYPE = os.environ.get(
+    "DATAPROC_CLUSTER_MASTER_MACHINE_TYPE"
+)
+DATAPROC_CLUSTER_MASTER_BOOT_DISK_SIZE = os.environ.get(
+    "DATAPROC_CLUSTER_MASTER_BOOT_DISK_SIZE"
+)
 DATAPROC_CLUSTER_NUM_WORKERS = os.environ.get("DATAPROC_CLUSTER_NUM_WORKERS")
-DATAPROC_CLUSTER_WORKER_MACHINE_TYPE = os.environ.get("DATAPROC_CLUSTER_WORKER_MACHINE_TYPE")
-DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE = os.environ.get("DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE")
+DATAPROC_CLUSTER_WORKER_MACHINE_TYPE = os.environ.get(
+    "DATAPROC_CLUSTER_WORKER_MACHINE_TYPE"
+)
+DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE = os.environ.get(
+    "DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE"
+)
 DATAPROC_CLUSTER_IMAGE_VERSION = os.environ.get("DATAPROC_CLUSTER_IMAGE_VERSION")
 
 PYSPARK_JOB = {
-    "reference": {"project_id": "GCP_PROJECT_ID"},
-    "placement": {"cluster_name": "DATAPROC_CLUSTER_NAME"},
+    "reference": {"project_id": GCP_PROJECT_ID},
+    "placement": {"cluster_name": DATAPROC_CLUSTER_NAME},
     "pyspark_job": {
         "main_python_file_uri": GCS_BUCKET_PYSPARK_PATH,
         "jar_file_uris": ["gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar"],
@@ -46,21 +55,32 @@ DATAPROC_CLUSTER_CONFIG = {
     "master_config": {
         "num_instances": 1,
         "machine_type_uri": DATAPROC_CLUSTER_MASTER_MACHINE_TYPE,
-        "disk_config": {"boot_disk_size_gb": int(DATAPROC_CLUSTER_MASTER_BOOT_DISK_SIZE)},
+        "disk_config": {
+            "boot_disk_size_gb": int(DATAPROC_CLUSTER_MASTER_BOOT_DISK_SIZE)
+        },
     },
     "worker_config": {
         "num_instances": int(DATAPROC_CLUSTER_NUM_WORKERS),
         "machine_type_uri": DATAPROC_CLUSTER_WORKER_MACHINE_TYPE,
-        "disk_config": {"boot_disk_size_gb": int(DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE)},
+        "disk_config": {
+            "boot_disk_size_gb": int(DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE)
+        },
     },
-    "software_config": {"image_version": DATAPROC_CLUSTER_IMAGE_VERSION}
+    "software_config": {
+        "image_version": DATAPROC_CLUSTER_IMAGE_VERSION,
+        "properties": {
+            "spark-env:DATAPROC_CLUSTER_NAME": DATAPROC_CLUSTER_NAME_RAW+"-m",
+            "spark-env:GCP_PROJECT_ID": GCP_PROJECT_ID,
+            "spark-env:FILEPATH": "source/logs/",
+        },
+    },
 }
 
 args = {"owner": "jtardelli"}
 
 # Define DAG
 with DAG(
-    dag_id="dataproc_emphemeral_cluster_job",
+    dag_id="dataproc_ephemeral_cluster_job",
     schedule_interval="0 5 * * *",
     start_date=days_ago(1),
     default_args=args,
