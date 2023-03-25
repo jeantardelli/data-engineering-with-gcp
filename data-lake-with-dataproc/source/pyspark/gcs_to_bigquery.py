@@ -2,7 +2,7 @@
 import os
 from pyspark.sql import SparkSession
 
-spark = SparkSession.builder.appName("spark_hdfs_to_hdfs").getOrCreate()
+spark = SparkSession.builder.appName("spark_gcs_to_bigquery").getOrCreate()
 
 sc = spark.sparkContext
 sc.setLogLevel("WARN")
@@ -12,7 +12,6 @@ FILEPATH = os.environ.get("FILEPATH")
 
 GCS_BUCKET_NAME = "-".join(DATAPROC_CLUSTER_NAME.split("-")[:-1])
 GCS_BUCKET_NAME += "-" + os.environ.get("GCP_PROJECT_ID")
-
 
 log_files_rdd = sc.textFile("gs://{}/{}*".format(GCS_BUCKET_NAME, FILEPATH))
 
@@ -38,8 +37,6 @@ article_count_df = spark.sql(sql)
 print(" ### Get only articles and blogs records ### ")
 article_count_df.show(5)
 
-article_count_df.write.format("bigquery")\
-        .option('temporaryGcsBucket', GCS_BUCKET_NAME)\
-        .option('table', 'dm_content_creators.article_count_df')\
-        .mode('overwrite')\
-        .save()
+article_count_df.write.format("bigquery").option(
+    "temporaryGcsBucket", GCS_BUCKET_NAME
+).option("table", "dm_content_creators.article_count_df").mode("overwrite").save()
