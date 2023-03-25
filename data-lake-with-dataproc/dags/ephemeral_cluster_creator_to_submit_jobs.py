@@ -37,11 +37,15 @@ DATAPROC_CLUSTER_WORKER_BOOT_DISK_SIZE = os.environ.get(
 )
 DATAPROC_CLUSTER_IMAGE_VERSION = os.environ.get("DATAPROC_CLUSTER_IMAGE_VERSION")
 
+GCS_BUCKET_NAME = DATAPROC_CLUSTER_NAME_RAW + "-" + GCP_PROJECT_ID
+
 PYSPARK_JOB = {
     "reference": {"project_id": GCP_PROJECT_ID},
     "placement": {"cluster_name": DATAPROC_CLUSTER_NAME},
     "pyspark_job": {
-        "main_python_file_uri": GCS_BUCKET_PYSPARK_PATH,
+        "main_python_file_uri": "gs://{}/{}".format(
+            GCS_BUCKET_NAME, GCS_BUCKET_PYSPARK_PATH
+        ),
         "jar_file_uris": ["gs://spark-lib/bigquery/spark-bigquery-latest_2.12.jar"],
     },
 }
@@ -69,7 +73,7 @@ DATAPROC_CLUSTER_CONFIG = {
     "software_config": {
         "image_version": DATAPROC_CLUSTER_IMAGE_VERSION,
         "properties": {
-            "spark-env:DATAPROC_CLUSTER_NAME": DATAPROC_CLUSTER_NAME_RAW+"-m",
+            "spark-env:DATAPROC_CLUSTER_NAME": DATAPROC_CLUSTER_NAME_RAW + "-m",
             "spark-env:GCP_PROJECT_ID": GCP_PROJECT_ID,
             "spark-env:FILEPATH": "source/logs/",
         },
@@ -107,7 +111,7 @@ with DAG(
     # Delete Dataproc Cluster
     delete_cluster = DataprocDeleteClusterOperator(
         task_id="delete_dataproc_cluster",
-        project_id="GCP_PROJECT_ID",
+        project_id=GCP_PROJECT_ID,
         cluster_name=DATAPROC_CLUSTER_NAME,
         region=DATAPROC_CLUSTER_REGION,
     )
