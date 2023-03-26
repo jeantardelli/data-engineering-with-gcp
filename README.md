@@ -14,3 +14,4 @@ of information into a single place. This repo contains Python sample codes that 
 - [orchestration-with-cloud-composer-and-airflow](./orchestration-with-cloud-composer-and-airflow): Cloud Composer is an Airflow-managed service in GCP. This directory contains the DAGs that orchestrate jobs/tasks and load data to BigQuery.
 - [data-lake-with-dataproc](./data-lake-with-dataproc): A data lake is a concept similar to a data warehouse, but the key difference is what you
 store in it. This directory contains sample codes that process data using HDFS, PySpark, Hive and GCP.
+- [processing-streaming-data-with-pubsub-and-dataproc](./processing-streaming-data-with-pubsub-and-dataproc): Processing streaming data is becoming increasingly popular. This directory contains sample codes for streaming data as well as how to apply transformations to it using Cloud Dataflow and how to analyze it in BigQuery.
