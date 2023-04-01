@@ -22,8 +22,44 @@ gcs-create-bucket:
 gcs-remove-bucket:
 	gcloud storage rm --recursive gs://${GCS_BUCKET_NAME}
 
-gcs-upload-source-files:
+gcs-upload-files:
 	gsutil -m cp -r ${GCS_DATA_SOURCE_PATH} gs://${GCS_BUCKET_NAME}/
+
+dataflow-batch-local-runner:
+	python ${BEAM_PYTHON_FILE}\
+		--project ${GCP_PROJECT_ID} \
+		--region ${BEAM_REGION} \
+		--runner DirectRunner \
+		--temp-location gs://${GCS_BUCKET_NAME}/dataflow/temp \
+		--input-file source/data/txt/* \
+		--bucket-name ${GCS_BUCKET_NAME}
+
+dataflow-stream-local-runner:
+	python ${BEAM_PYTHON_FILE}\
+		--project ${GCP_PROJECT_ID} \
+		--region ${BEAM_REGION} \
+		--runner DirectRunner \
+		--temp-location gs://${GCS_BUCKET_NAME}/dataflow/temp \
+		--subscription-id ${PUBSUB_SUBSCRIPTION_ID} \
+		--table-id ${BIGQUERY_TABLE_ID}
+
+dataflow-batch-dataflow-runner:
+	python ${BEAM_PYTHON_FILE} \
+		--project ${GCP_PROJECT_ID} \
+		--region ${BEAM_REGION} \
+		--runner DataflowRunner \
+		--temp-location gs://${GCS_BUCKET_NAME}/dataflow/temp \
+		--input-file source/data/txt/* \
+		--bucket-name ${GCS_BUCKET_NAME}
+
+dataflow-stream-dataflow-runner:
+	python ${BEAM_PYTHON_FILE}\
+		--project ${GCP_PROJECT_ID} \
+		--region ${BEAM_REGION} \
+		--runner DataflowRunner \
+		--temp-location gs://${GCS_BUCKET_NAME}/dataflow/temp \
+		--subscription-id ${PUBSUB_SUBSCRIPTION_ID} \
+		--table-id ${BIGQUERY_TABLE_ID}
 
 python-install:
 	pip install --upgrade pip && pip install -r requirements.txt
@@ -34,6 +70,10 @@ python-lint:
 python-black:
 	python -m black ./source/python/*.py
 
-all: gcs-create-bucket gcs-upload-files pubsub-create-topic pubsub-create-subscription
+all-pubsub-stream: gcs-create-bucket gcs-upload-files pubsub-create-topic pubsub-create-subscription
 
-tear-down: pubsub-delete-subscription pubsub-delete-topic gcs-remove-bucket
+tear-down-pubsub-stream: pubsub-delete-subscription pubsub-delete-topic gcs-remove-bucket
+
+all-dataflow: gcs-create-bucket gcs-upload-files pubsub-create-topic pubsub-create-subscription
+
+tear-down-dataflow: pubsub-delete-subscription pubsub-delete-topic gcs-remove-bucket

@@ -13,3 +13,7 @@ export GCS_DATA_SOURCE_PATH=./source/
 
 # Beam variables
 export BEAM_REGION=us-central1
+export BEAM_PYTHON_FILE=./source/python/beam_gcs_to_gcs.py
+
+# BigQuery variables
+export BIGQUERY_TABLE_ID=${GCP_PROJECT_ID}:raw_bikesharing.bike_trips_streaming

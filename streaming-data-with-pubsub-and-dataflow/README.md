@@ -15,3 +15,13 @@ This repo uses the following GCP products:
 - [BigQuery](https://cloud.google.com/bigquery)
 
 Make sure to enable the application programming interface (API) for these products.
+
+## Creating a Dataflow streaming job without aggregation
+
+To run this streaming pipeline execute the following steps:
+
+1. `source ./scripts/environment_variables.sh`
+2. `make all-pubsub-stream`
+3. `make dataflow-stream-local-runner`
+
+Make sure to create the BigQuery table and that the `table_id` match the one defined on the env var.

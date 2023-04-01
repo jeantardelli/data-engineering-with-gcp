@@ -14,10 +14,6 @@ import apache_beam as beam
 from apache_beam.transforms.combiners import Sample
 from apache_beam.options.pipeline_options import PipelineOptions
 
-parser = argparse.ArgumentParser()
-args, beam_args = parser.parse_known_args()
-beam_options = PipelineOptions(beam_args)
-
 
 class Split(beam.DoFn):
     """
@@ -83,7 +79,6 @@ def run(bucket_name:str, input_file:str, beam_args:list):
             p
             | "Read" >> beam.io.textio.ReadFromText(INPUT_FILE)
             | "Split" >> beam.ParDo(Split())
-            | "Get URL" >> beam.Map(lambda s: (s["url"], 1))
             | "Sample" >> Sample.FixedSizeGlobally(19)
             | "Write" >> beam.io.textio.WriteToText(OUTPUT_PATH)
         )
