@@ -58,7 +58,7 @@ dataflow-stream-dataflow-runner:
 		--region ${BEAM_REGION} \
 		--runner DataflowRunner \
 		--temp-location gs://${GCS_BUCKET_NAME}/dataflow/temp \
-		--subscription-id ${PUBSUB_SUBSCRIPTION_ID} \
+		--subscription-id projects/${GCP_PROJECT_ID}/subscriptions/${PUBSUB_SUBSCRIPTION_ID} \
 		--table-id ${BIGQUERY_TABLE_ID}
 
 python-install:
