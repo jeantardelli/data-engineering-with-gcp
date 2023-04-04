@@ -53,7 +53,17 @@ dataflow-batch-dataflow-runner:
 		--bucket-name ${GCS_BUCKET_NAME}
 
 dataflow-stream-dataflow-runner:
-	python ${BEAM_PYTHON_FILE}\
+	python ${BEAM_PYTHON_FILE} \
+		--project ${GCP_PROJECT_ID} \
+		--region ${BEAM_REGION} \
+		--runner DataflowRunner \
+		--temp-location gs://${GCS_BUCKET_NAME}/dataflow/temp \
+		--subscription-id projects/${GCP_PROJECT_ID}/subscriptions/${PUBSUB_SUBSCRIPTION_ID} \
+		--table-id ${BIGQUERY_TABLE_ID}
+
+
+dataflow-stream-agg-local-runner:
+	python ${BEAM_PYTHON_FILE} \
 		--project ${GCP_PROJECT_ID} \
 		--region ${BEAM_REGION} \
 		--runner DataflowRunner \

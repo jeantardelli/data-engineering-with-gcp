@@ -19,6 +19,7 @@ class Split(beam.DoFn):
     """
     A DoFn that splits a text element into a dictionary of fields.
     """
+
     def process(self, element):
         """
         Splits a text element into a dictionary of fields.
@@ -58,7 +59,8 @@ def split_map(records):
         "url": str(rows[6]),
     }
 
-def run(bucket_name:str, input_file:str, beam_args:list):
+
+def run(bucket_name: str, input_file: str, beam_args: list):
     """
     Runs the Beam pipeline.
 
@@ -75,7 +77,8 @@ def run(bucket_name:str, input_file:str, beam_args:list):
 
     beam_options = PipelineOptions(beam_args)
 
-    with beam.Pipeline(options=beam_options) as p: (
+    with beam.Pipeline(options=beam_options) as p:
+        (
             p
             | "Read" >> beam.io.textio.ReadFromText(INPUT_FILE)
             | "Split" >> beam.ParDo(Split())
@@ -83,12 +86,17 @@ def run(bucket_name:str, input_file:str, beam_args:list):
             | "Write" >> beam.io.textio.WriteToText(OUTPUT_PATH)
         )
 
+
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--bucket-name", dest="bucket_name", required=True, help="Bucket name")
-    parser.add_argument("--input-file", dest="input_file", required=True, help="Input file path")
+    parser.add_argument(
+        "--bucket-name", dest="bucket_name", required=True, help="Bucket name"
+    )
+    parser.add_argument(
+        "--input-file", dest="input_file", required=True, help="Input file path"
+    )
     args, beam_args = parser.parse_known_args()
 
     run(args.bucket_name, args.input_file, beam_args)
