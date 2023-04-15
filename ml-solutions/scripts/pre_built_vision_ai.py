@@ -9,8 +9,8 @@ from google.cloud import vision
 from google.cloud import translate_v2 as translate
 
 GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME")
-GCS_DEST_PATH = os.environ.get("GCS_DEST_PATH")
-GCS_URI = f"gs://{GCS_BUCKET_NAME}/{GCS_DEST_PATH}"
+GCS_FILE_PATH = os.environ.get("GCS_FILE_PATH")
+GCS_URI = f"gs://{GCS_BUCKET_NAME}/{GCS_FILE_PATH}"
 
 
 def detect_text(gcs_uri):
