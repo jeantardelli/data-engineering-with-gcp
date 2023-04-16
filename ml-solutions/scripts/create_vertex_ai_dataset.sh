@@ -5,10 +5,11 @@ PROJECT=$2
 DATASET_NAME=$3
 METADATA_SCHEMA_URI=$4
 BIGQUERY_URI=$5
+TABLE_NAME=$6
 
 cat <<EOT > request.json
 {
-  "display_name": "${DATASET_NAME}",
+  "display_name": "${DATASET_NAME}_${TABLE_NAME}",
   "metadata_schema_uri": "${METADATA_SCHEMA_URI}",
   "metadata": {
     "input_config": {

@@ -37,22 +37,19 @@ vertex-ai-create-dataset:
 	@bash scripts/create_vertex_ai_dataset.sh ${VERTEX_AI_REGION} \
 		${GCP_PROJECT_ID} \
 		${BIGQUERY_DATASET_NAME} \
-		"gs://google-cloud-aiplatform/schema/dataset/metadata/tabular_1.0.0.yaml" \
-		"bq://bigquery-public-data.ml_datasets."${BIGQUERY_TABLE_NAME}
-
-vertex-ai-import-data:
-	@echo "Importing data from BigQuery table: ${BIGQUERY_TABLE_ID} to Vertex AI Dataset"
-	gcloud ai datasets import --dataset-id ${BIGQUERY_TABLE_NAME} --bigquery-source ${BIGQUERY_TABLE_ID} --region ${VERTEX_AI_REGION}
-	@echo "Data import complete"
+		gs://google-cloud-aiplatform/schema/dataset/metadata/tabular_1.0.0.yaml \
+		bq://bigquery-public-data.${BIGQUERY_DATASET_NAME}.${BIGQUERY_TABLE_NAME} \
+		${BIGQUERY_TABLE_NAME}
 
 vertex-ai-train-model:
 	@echo "Training a model using Vertex AI AutoML"
-	python train_automl.py --project_id ${GCP_PROJECT_ID} \
+	python ./scripts/train_automl.py --project_id ${GCP_PROJECT_ID} \
 		--region ${VERTEX_AI_REGION} \
-		--dataset_id ${BIGQUERY_DATASET_NAME} \
-		--target_column ${BIGQUERY_TABLE_TARGET_COLUMN}
+		--dataset_id ${BIGQUERY_DATASET_NAME}_${BIGQUERY_TABLE_NAME} \
+		--target_column ${BIGQUERY_TABLE_TARGET_COLUMN} \
+		--train_budget ${VERTEX_AI_TRAIN_MILI_BUDGET_HOURS}
 	@echo "Model training complete"
 
 gcs-all: gcs-create-bucket gcs-upload-files
 
-vertex-ai-all: vertex-ai-create-dataset vertex-ai-import-data vertex-ai-train-model
+vertex-ai-all: vertex-ai-create-dataset vertex-ai-train-model
