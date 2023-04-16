@@ -1,0 +1,7 @@
+black
+pylint
+joblib
+scikit-learn
+google-cloud-vision
+google-cloud-translate
+google-cloud-aiplatform

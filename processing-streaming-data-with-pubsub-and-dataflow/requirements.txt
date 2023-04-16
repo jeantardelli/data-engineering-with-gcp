@@ -1,3 +1,0 @@
-black
-pylint
-google-cloud-pubsub
