@@ -18,3 +18,13 @@ source .env
 make bigquery-copy-public-dataset
 python scripts/random_forest_model_from_bigquery_table.py 
 ```
+
+## Simple Cloud Vision and Tranlation Example
+
+To run the ML example that utilizes the Cloud Vision and Translation APIs, follow these steps:
+
+```bash
+source .env
+make gcs-all
+python scripts/pre_built_vision_ai.py
+```
